@@ -36,6 +36,19 @@ RCT_EXPORT_MODULE()
 RCT_EXPORT_VIEW_PROPERTY(id, NSString)
 RCT_EXPORT_VIEW_PROPERTY(title, NSString)
 RCT_EXPORT_VIEW_PROPERTY(subtitle, NSString)
-RCT_EXPORT_VIEW_PROPERTY(coordinate, CLLocationCoordinate2D)
+
+RCT_CUSTOM_VIEW_PROPERTY(coordinate, CLLocationCoordinate2D, RCTMapboxAnnotation)
+{
+    [UIView animateWithDuration:1.0
+                          delay:0
+                        options:(UIViewAnimationOptionCurveLinear |
+                                 UIViewAnimationOptionAllowUserInteraction |
+                                 UIViewAnimationOptionBeginFromCurrentState)
+                     animations:^{
+                         view.coordinate = [RCTConvert CLLocationCoordinate2D:json];
+                     }
+                     completion:NULL];
+}
+
 
 @end
