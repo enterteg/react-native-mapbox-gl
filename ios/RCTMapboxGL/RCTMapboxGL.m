@@ -113,7 +113,7 @@
     for (NSString *key in [_reactSubviews allKeys]) {
         [_map addAnnotation:_reactSubviews[key]];
     }
-    
+
     [self layoutSubviews];
 }
 
@@ -138,23 +138,24 @@
     if ([subview isKindOfClass:[RCTMapboxAnnotation class]]) {
         RCTMapboxAnnotation * annotation = (RCTMapboxAnnotation *) subview;
         annotation.map = self;
-        [_map addAnnotation:annotation];
         NSString *key = annotation.reuseIdentifier;
         _reactSubviews[key] = annotation;
+        [_map addAnnotation:annotation];
     }
 }
 
-- (void)removeReactSubview:(id<RCTComponent>)subview {
+- (void)removeReactSubview:(UIView *)subview {
     // similarly, when the children are being removed we have to do the appropriate
     // underlying mapview action here.
     if ([subview isKindOfClass:[RCTMapboxAnnotation class]]) {
         RCTMapboxAnnotation * annotation = (RCTMapboxAnnotation *) subview;
+        [_map removeAnnotation:annotation];
         [_reactSubviews removeObjectForKey:annotation.reuseIdentifier];
     }
 }
 
 - (NSArray<id<RCTComponent>> *)reactSubviews {
-    return nil;
+    return [_reactSubviews allValues];
 }
 
 
@@ -240,6 +241,7 @@
 
 - (BOOL)mapView:(RCTMapboxGL *)mapView annotationCanShowCallout:(id <MGLAnnotation>)annotation {
     if (!_annotationsPopUpEnabled) { return NO; }
+    if (![annotation isKindOfClass:[RCTMGLAnnotation class]]) { return NO; }
     NSString *title = [(RCTMGLAnnotation *) annotation title];
     NSString *subtitle = [(RCTMGLAnnotation *) annotation subtitle];
     return ([title length] != 0 || [subtitle length] != 0);
@@ -285,6 +287,7 @@
 
 - (MGLAnnotationImage *)mapView:(MGLMapView *)mapView imageForAnnotation:(id<MGLAnnotation>)annotation
 {
+    if (![annotation isKindOfClass:[RCTMGLAnnotation class]]) { return nil; }
     NSDictionary *source = [(RCTMGLAnnotation *) annotation annotationImageSource];
     if (!source) { return nil; }
 
