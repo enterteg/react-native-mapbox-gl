@@ -30,6 +30,7 @@ RCT_EXPORT_MODULE()
 //    tapGestureRecognizer.cancelsTouchesInView = NO;
 //    [marker addGestureRecognizer:tapGestureRecognizer];
     marker.bridge = self.bridge;
+    marker.coordinate = kCLLocationCoordinate2DInvalid;
     return marker;
 }
 
@@ -39,6 +40,10 @@ RCT_EXPORT_VIEW_PROPERTY(subtitle, NSString)
 
 RCT_CUSTOM_VIEW_PROPERTY(coordinate, CLLocationCoordinate2D, RCTMapboxAnnotation)
 {
+    if (!CLLocationCoordinate2DIsValid(view.coordinate)) {
+        // This is the first time this property gets set
+        view.coordinate = [RCTConvert CLLocationCoordinate2D:json];
+    }
     [UIView animateWithDuration:1.0
                           delay:0
                         options:(UIViewAnimationOptionCurveLinear |
