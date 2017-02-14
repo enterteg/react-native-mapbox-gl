@@ -24,35 +24,35 @@ RCT_EXPORT_MODULE()
 
 - (UIView *)view
 {
-    RCTMapboxAnnotation *marker = [[RCTMapboxAnnotation alloc] init];
-//    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(_handleTap:)];
-//    // setting this to NO allows the parent MapView to continue receiving marker selection events
-//    tapGestureRecognizer.cancelsTouchesInView = NO;
-//    [marker addGestureRecognizer:tapGestureRecognizer];
-    marker.bridge = self.bridge;
-    marker.coordinate = kCLLocationCoordinate2DInvalid;
+    RCTMapboxAnnotation *marker = [[RCTMapboxAnnotation alloc] initWithReuseIdentifier:nil];
+    marker.reused = YES;
     return marker;
 }
 
 RCT_EXPORT_VIEW_PROPERTY(id, NSString)
 RCT_EXPORT_VIEW_PROPERTY(title, NSString)
 RCT_EXPORT_VIEW_PROPERTY(subtitle, NSString)
+RCT_EXPORT_VIEW_PROPERTY(enabled, BOOL)
 
 RCT_CUSTOM_VIEW_PROPERTY(coordinate, CLLocationCoordinate2D, RCTMapboxAnnotation)
 {
-    if (!CLLocationCoordinate2DIsValid(view.coordinate)) {
-        // This is the first time this property gets set
+    // Annotation views that are not visible get set x-offset that is lower than 0 (-10 times the width of the view atm)
+    BOOL movedOffScreen = view.frame.origin.x + view.frame.size.width < 0.0;
+    if (view.reused || movedOffScreen) {
+        // This is the first time this property gets set or the view is outside the visible area in which case we don't want to animate the transition
         view.coordinate = [RCTConvert CLLocationCoordinate2D:json];
+        view.reused = NO;
+    } else {
+        [UIView animateWithDuration:1.0
+                              delay:0
+                            options:(UIViewAnimationOptionCurveLinear |
+                                     UIViewAnimationOptionAllowUserInteraction |
+                                     UIViewAnimationOptionBeginFromCurrentState)
+                         animations:^{
+                             view.coordinate = [RCTConvert CLLocationCoordinate2D:json];
+                         }
+                         completion:NULL];
     }
-    [UIView animateWithDuration:1.0
-                          delay:0
-                        options:(UIViewAnimationOptionCurveLinear |
-                                 UIViewAnimationOptionAllowUserInteraction |
-                                 UIViewAnimationOptionBeginFromCurrentState)
-                     animations:^{
-                         view.coordinate = [RCTConvert CLLocationCoordinate2D:json];
-                     }
-                     completion:NULL];
 }
 
 

@@ -23,6 +23,7 @@
 
     /* Map properties */
     NSMutableDictionary *_annotations;
+    NSMutableArray *_viewAnnotations;
     CLLocationCoordinate2D _initialCenterCoordinate;
     double _initialDirection;
     double _initialZoomLevel;
@@ -45,7 +46,6 @@
     MGLAnnotationVerticalAlignment _userLocationVerticalAlignment;
     /* So we don't fire onChangeUserTracking mode when triggered by props */
     BOOL _isChangingUserTracking;
-    NSMutableDictionary<NSString *, UIView *> *_reactSubviews;
 }
 
 // View creation
@@ -57,7 +57,7 @@
         _clipsToBounds = YES;
         _finishedLoading = NO;
         _annotations = [NSMutableDictionary dictionary];
-        _reactSubviews = [NSMutableDictionary dictionary];
+        _viewAnnotations = [NSMutableArray array];
     }
 
     return self;
@@ -110,8 +110,12 @@
     }
 
     [self addSubview:_map];
-    for (NSString *key in [_reactSubviews allKeys]) {
-        [_map addAnnotation:_reactSubviews[key]];
+    for (id<RCTComponent>subview in [self reactSubviews]) {
+        if ([subview isKindOfClass:[RCTMapboxAnnotation class]]) {
+            RCTMapboxAnnotation *annotation = (RCTMapboxAnnotation*) subview;
+            annotation.map = self;
+            [_map addAnnotation:annotation];
+        }
     }
 
     [self layoutSubviews];
@@ -133,32 +137,29 @@
 
 // React subviews for custom annotation management
 - (void)insertReactSubview:(id<RCTComponent>)subview atIndex:(NSInteger)atIndex {
-    // Our desired API is to pass up markers/overlays as children to the mapview component.
-    // This is where we intercept them and do the appropriate underlying mapview action.
+    [_viewAnnotations insertObject:subview atIndex:atIndex];
     if ([subview isKindOfClass:[RCTMapboxAnnotation class]]) {
-        RCTMapboxAnnotation * annotation = (RCTMapboxAnnotation *) subview;
+        RCTMapboxAnnotation *annotation = (RCTMapboxAnnotation*) subview;
         annotation.map = self;
-        NSString *key = annotation.reuseIdentifier;
-        _reactSubviews[key] = annotation;
         [_map addAnnotation:annotation];
     }
 }
 
 - (void)removeReactSubview:(UIView *)subview {
-    // similarly, when the children are being removed we have to do the appropriate
-    // underlying mapview action here.
+    [_viewAnnotations removeObject:subview];
     if ([subview isKindOfClass:[RCTMapboxAnnotation class]]) {
-        RCTMapboxAnnotation * annotation = (RCTMapboxAnnotation *) subview;
+        RCTMapboxAnnotation *annotation = (RCTMapboxAnnotation*) subview;
         [_map removeAnnotation:annotation];
-        [_reactSubviews removeObjectForKey:annotation.reuseIdentifier];
+        annotation.map = nil;
     }
 }
 
-- (NSArray<id<RCTComponent>> *)reactSubviews {
-    return [_reactSubviews allValues];
+- (NSArray<UIView *> *)reactSubviews {
+    return _viewAnnotations;
 }
 
-
+- (void)didUpdateReactSubviews {
+}
 
 // Annotation management
 
@@ -200,13 +201,6 @@
     }
 }
 
-- (void)restoreAnnotationPosition:(NSString *)annotationId {
-    if (_reactSubviews[annotationId] && [_reactSubviews[annotationId] isKindOfClass:[RCTMapboxAnnotation class]]){
-        RCTMapboxAnnotation *annotation = (RCTMapboxAnnotation *)_reactSubviews[annotationId];
-        CGPoint point = [_map convertCoordinate:annotation.coordinate toPointToView:_map];
-        annotation.center = point;
-    }
-}
 - (CGFloat)mapView:(MGLMapView *)mapView alphaForShapeAnnotation:(RCTMGLAnnotationPolyline *)shape
 {
     if ([shape isKindOfClass:[RCTMGLAnnotationPolyline class]]) {
@@ -250,11 +244,8 @@
 - (nullable MGLAnnotationView *)mapView:(MGLMapView *)mapView viewForAnnotation:(id <MGLAnnotation>)annotation {
     if ([annotation isKindOfClass:[RCTMapboxAnnotation class]] ){
         RCTMapboxAnnotation *customAnnotation = (RCTMapboxAnnotation *)annotation;
-        MGLAnnotationView *annotationView = [mapView dequeueReusableAnnotationViewWithIdentifier:customAnnotation.reuseIdentifier];
-        if (!annotationView){
-            annotationView = _reactSubviews[customAnnotation.reuseIdentifier];
-        }
-        return annotationView;
+        customAnnotation.reused = YES;
+        return customAnnotation;
     }
     return nil;
 }

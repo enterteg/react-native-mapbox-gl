@@ -12,7 +12,8 @@
 @interface RCTMapboxAnnotation : MGLAnnotationView <MGLAnnotation>
 
 @property (nonatomic, weak, nullable) RCTMapboxGL *map;
-@property (nonatomic, weak, nullable) RCTBridge *bridge;
+@property (nonatomic) BOOL reused;
+
 /**
  The center point (specified as a map coordinate) of the annotation. (required)
  (read-only)

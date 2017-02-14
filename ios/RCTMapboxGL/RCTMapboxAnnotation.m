@@ -17,14 +17,12 @@
 @implementation RCTMapboxAnnotation {
 }
 
--(NSString *)reuseIdentifier {
-    return self.id;
+- (UIView *)reactSuperview {
+    return self.map;
 }
 
--(void)layoutSubviews {
-    [super layoutSubviews];
-    [self.map restoreAnnotationPosition:self.id];
-}
+- (void)reactSetFrame {
 
+}
 
 @end
