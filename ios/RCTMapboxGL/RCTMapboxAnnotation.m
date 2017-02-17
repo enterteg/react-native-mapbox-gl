@@ -21,8 +21,11 @@
     return self.map;
 }
 
-- (void)reactSetFrame {
-
+- (void)reactSetFrame:(CGRect)frame {
+    // Keep center position when updating view's frame
+    CGPoint center = self.center;
+    [super reactSetFrame:frame];
+    self.center = center;
 }
 
 @end
