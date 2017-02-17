@@ -23,6 +23,7 @@ const propTypes = {
   id: PropTypes.string.isRequired,
   title: PropTypes.string,
   subtitle: PropTypes.string,
+  enabled: PropTypes.bool,
   coordinate: PropTypes.shape({
     latitude: PropTypes.number.isRequired,
     longitude: PropTypes.number.isRequired,
