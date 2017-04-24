@@ -22,7 +22,7 @@
 
 /**
  The string containing the annotation’s title.
- 
+
  Although this property is optional, if you support the selection of annotations
  in your map view, you are expected to provide this property. This string is
  displayed in the callout for the associated annotation.
@@ -31,7 +31,7 @@
 
 /**
  The string containing the annotation’s title.
- 
+
  Although this property is optional, if you support the selection of annotations
  in your map view, you are expected to provide this property. This string is
  displayed in the callout for the associated annotation.
@@ -40,12 +40,11 @@
 
 /**
  The string containing the annotation’s subtitle.
- 
+
  This string is displayed in the callout for the associated annotation.
  */
 @property (nonatomic, copy, nullable) NSString *subtitle;
 
+@property (nonatomic, assign) BOOL rotatesToMatchCamera;
 
 @end
-
-
