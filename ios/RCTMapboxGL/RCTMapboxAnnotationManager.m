@@ -26,7 +26,6 @@ RCT_EXPORT_MODULE()
 {
     RCTMapboxAnnotation *marker = [[RCTMapboxAnnotation alloc] initWithReuseIdentifier:nil];
     marker.reused = YES;
-    marker.scalesWithViewingDistance = YES;
     return marker;
 }
 
